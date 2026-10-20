@@ -1,6 +1,6 @@
 # Contabilità Cantieri
 
-Versione **v03.3** · pagina protetta da password.
+Versione **v03.4** · pagina protetta da password.
 
 Il file `index.html` contiene l'app **cifrata**: senza la password, chi apre il sito o guarda i file su GitHub vede solo la richiesta di password e testo illeggibile.
 
