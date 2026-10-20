@@ -2,7 +2,7 @@
 
 Web app in un solo file (`index.html`) per presenze, personale, paghe, incassi, spese, preventivi, report e foto dei cantieri, con assistente integrato in linguaggio naturale.
 
-Versione: **v03.1**
+Versione: **v03.2**
 
 ## Cosa contiene
 
@@ -28,6 +28,14 @@ Versione: **v03.1**
 - Per spostare i dati tra dispositivi: **Dati → Scarica backup JSON**, poi sull'altro dispositivo **Dati → importa il file**.
 - Con un repository pubblico chiunque conosca l'indirizzo può aprire l'app, ma vede solo i propri dati (vuoti).
 - Per il backup automatico su una cartella di Google Drive e per le foto su cartella Drive serve Chrome su computer o Android.
+
+## Password
+
+In **Dati → Protezione con password** puoi bloccare l'app con una password, su ogni dispositivo che usi.
+
+- Alla prima attivazione compare un **codice di recupero**: scrivilo su carta, serve se dimentichi la password.
+- Il blocco scatta all'apertura, con il pulsante **Blocca** in alto e dopo un periodo di inattività (a scelta).
+- È un blocco di schermata: non cifra i dati nel browser. Tieni al sicuro i backup.
 
 ## Aggiornare l'app
 

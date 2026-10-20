@@ -139,7 +139,17 @@ body:has(.fbig){overflow:hidden}
 .ov{overscroll-behavior:contain}
 .md{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 #ai-log{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}#ai-chips{overscroll-behavior-x:contain}
+html.locked,html.locked body{overflow:hidden!important}
+html.locked body>*:not(#lock){visibility:hidden!important}
+#lock{display:none}
+html.locked #lock{display:flex;position:fixed;inset:0;z-index:2147483000;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:var(--bg);color:var(--ink);font-family:var(--f-body);visibility:visible!important;overflow:auto}
+#lock .lkb{width:min(380px,100%);display:flex;flex-direction:column;gap:12px}
+#lock .lkb h1{font:700 30px/1.1 var(--f-head);margin:0;text-transform:uppercase;letter-spacing:.02em}#lock .lkb h1 span{color:var(--acc)}
+#lock .lkb p{margin:0;color:var(--mut)}#lock .lkb label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mut)}
+#lock .lkb input{font:inherit;font-size:16px;color:var(--ink);background:var(--surf);border:1px solid var(--line);border-radius:8px;padding:11px 12px;min-width:0}
+#lock .lke{min-height:1.2em;color:var(--neg)!important;font-size:14px}#lock .lka{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}#lock .lkl{text-align:center;font-size:14px}#lock .lkl a{color:var(--acc)}
 </style>
+<script>try{if(localStorage.getItem('cc_lock')){var u='';try{u=sessionStorage.getItem('cc_unlocked')}catch(e){}if(u!=='1')document.documentElement.classList.add('locked')}}catch(e){}</script>
 
 <div id="app">
   <div class="top">
@@ -150,6 +160,7 @@ body:has(.fbig){overflow:hidden}
   <main id="view"></main>
 </div>
 <div id="modal"></div>
+<div id="lock" aria-live="polite"></div>
 <div id="toast" hidden></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -701,7 +712,7 @@ function vDati(){
   <label class="f"><span>Telefono</span><input id="c_tel" inputmode="tel" value="${esc(CFG.tel)}"></label><label class="f"><span>IBAN per i pagamenti</span><input id="c_iban" value="${esc(CFG.iban)}"></label>
   <div class="f full"><span>Logo (compare in alto nei preventivi)</span><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">${CFG.logo?`<img src="${CFG.logo}" alt="Logo" style="max-height:56px;max-width:180px;background:#fff;border:1px solid var(--line);border-radius:6px;padding:4px"><button type="button" class="btn sm" data-act="logodel">Rimuovi logo</button>`:''}<input type="file" id="c_logo" accept="image/*"></div></div>
   <div class="acts"><span class="note sp">Il costo orario serve solo a stimare la manodopera nel margine dei cantieri. Con 0 si usano i pagamenti collegati al cantiere.</span><button type="button" class="btn pri" data-act="cfg">Salva impostazioni</button></div></form></div>
-  ${fbDiagHtml()}${storicoHtml()}<div class="sec"><h2>Contenuto archivio</h2><div class="tw"><table><tbody>${cnt}</tbody></table></div></div>
+  ${window.lockHtml?lockHtml():''}${fbDiagHtml()}${storicoHtml()}<div class="sec"><h2>Contenuto archivio</h2><div class="tw"><table><tbody>${cnt}</tbody></table></div></div>
   <div class="sec"><h2>Cestino <small>${S.cestino.length} elementi</small></h2><div class="list">${tr.length?tr.map(x=>`<div class="row" style="cursor:default"><div class="m"><b>${esc(labelOf(x.col,{...x.data}))}</b><small>${esc(x.col)} · eliminato il ${esc(new Date(x.del).toLocaleDateString('it-IT'))}</small></div><div class="v"><button class="btn sm" data-act="restore" data-id="${esc(x.id)}">Ripristina</button></div></div>`).join(''):empty('Cestino vuoto.')}</div></div>`;
 }
 const VIEWS={quadro:vQuadro,cantieri:vCantieri,presenze:vPresenze,personale:vPersonale,pagamenti:vPagamenti,incassi:vIncassi,spese:vSpese,preventivi:vPreventivi,report:vReport,dati:vDati};
@@ -1352,7 +1363,7 @@ async function fbInit(){
   setInterval(()=>{if(!document.hidden)fbSync()},30000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)fbSync()});
 }
-const APPVER='v03.1 · 17/10/2026';
+const APPVER='v03.2 · 20/10/2026';
 
 /* ===== storico backup: copie interne + copie giornaliere nella cartella Drive ===== */
 const sidb=()=>new Promise((res,rej)=>{const r=indexedDB.open('cc_snap',1);r.onupgradeneeded=()=>r.result.createObjectStore('s',{keyPath:'t'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
@@ -2319,7 +2330,7 @@ const st=document.createElement('style');st.textContent=css;document.head.append
 const root=document.createElement('div');
 root.innerHTML=`<button id="ai-fab" type="button">💬 Assistente</button>
 <div id="ai-panel" role="dialog" aria-label="Assistente">
-  <div id="ai-head"><b>Assistente</b> <small style="opacity:.6;font-weight:400">v03.1</small><button id="ai-mem" type="button" title="Memoria dell'assistente">Memoria</button><button id="ai-x" type="button">✕</button></div>
+  <div id="ai-head"><b>Assistente</b> <small style="opacity:.6;font-weight:400">v03.2</small><button id="ai-mem" type="button" title="Memoria dell'assistente">Memoria</button><button id="ai-x" type="button">✕</button></div>
   <div id="ai-log"></div>
   <div id="ai-chips"></div>
   <form id="ai-form"><input id="ai-in" autocomplete="off" placeholder="Scrivi o detta cosa devo fare…"><button type="button" id="ai-mic" title="Detta">🎤</button><button class="go" type="submit">Invia</button></form>
@@ -2444,6 +2455,128 @@ window.CCAI.run=async function(t){
 };
 })();
 
+</script>
+<script>
+/* ========== blocco con password (vale per questo dispositivo) ========== */
+(function(){
+'use strict';
+const K='cc_lock',SS='cc_unlocked',H=document.documentElement;
+const gEl=id=>document.getElementById(id);
+const E=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let mem=false,last=Date.now(),hiddenAt=0,fails=0,until=0;
+const get=()=>{try{return JSON.parse(localStorage.getItem(K)||'null')}catch{return null}};
+const put=o=>{try{if(o)localStorage.setItem(K,JSON.stringify(o));else localStorage.removeItem(K);return true}catch{return false}};
+const isUn=()=>{try{return sessionStorage.getItem(SS)==='1'}catch{return mem}};
+const setUn=v=>{mem=v;try{if(v)sessionStorage.setItem(SS,'1');else sessionStorage.removeItem(SS)}catch{}};
+const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+const rnd=n=>{const a=new Uint8Array(n);crypto.getRandomValues(a);return a};
+async function hp(pw,salt,alg){
+  if(alg!=='w'&&window.crypto&&crypto.subtle){const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveBits']);return hex(await crypto.subtle.deriveBits({name:'PBKDF2',salt:new TextEncoder().encode(salt),iterations:150000,hash:'SHA-256'},k,256))}
+  let h=2166136261>>>0;const s=salt+'|'+pw;for(let r=0;r<3000;r++)for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)>>>0}return h.toString(16)}
+const algNow=()=>(window.crypto&&crypto.subtle)?'p':'w';
+const normRec=s=>String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+function newRec(){const al='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';const a=rnd(12);let s='';for(let i=0;i<12;i++)s+=al[a[i]%al.length];return s.slice(0,4)+'-'+s.slice(4,8)+'-'+s.slice(8)}
+const saltNew=()=>hex(rnd(16));
+async function makeState(pw,old){const salt=saltNew(),alg=algNow(),st={v:1,alg,salt,h:await hp(pw,salt,alg),auto:old?old.auto:15};
+  if(old&&old.rh){st.rs=old.rs;st.rh=old.rh;st.ralg=old.ralg}return st}
+async function check(pw,st){return (await hp(pw,st.salt,st.alg))===st.h}
+
+/* ---- schermata di blocco ---- */
+function lockUI(mode){
+  const st=get();const box=gEl('lock');if(!box||!st)return;
+  const wait=Math.max(0,Math.ceil((until-Date.now())/1000));
+  if(mode==='rec'){
+    box.innerHTML=`<div class="lkb"><h1>Contabilità <span>Cantieri</span></h1><p>Inserisci il codice di recupero e scegli una nuova password.</p>
+    <label>Codice di recupero<input id="lk_rc" autocomplete="off" autocapitalize="characters" placeholder="XXXX-XXXX-XXXX"></label>
+    <label>Nuova password<input id="lk_n1" type="password" autocomplete="new-password"></label>
+    <label>Ripeti la nuova password<input id="lk_n2" type="password" autocomplete="new-password"></label>
+    <p class="lke" id="lk_e" role="alert"></p>
+    <div class="lka"><button type="button" class="btn" id="lk_back">Indietro</button><button type="button" class="btn pri" id="lk_rgo">Cambia password</button></div></div>`;
+    gEl('lk_back').onclick=()=>lockUI();gEl('lk_rgo').onclick=recover;gEl('lk_rc').focus();return}
+  box.innerHTML=`<div class="lkb"><h1>Contabilità <span>Cantieri</span></h1><p>Inserisci la password per entrare.</p>
+  <label>Password<input id="lk_pw" type="password" autocomplete="current-password"></label>
+  <p class="lke" id="lk_e" role="alert">${wait?'Troppi tentativi. Riprova tra '+wait+' secondi.':''}</p>
+  <div class="lka"><button type="button" class="btn pri" id="lk_go">Entra</button></div>
+  ${st.rh?'<p class="lkl"><a href="#" id="lk_fg">Password dimenticata?</a></p>':''}</div>`;
+  const go=gEl('lk_go'),pw=gEl('lk_pw');go.onclick=tryUnlock;pw.onkeydown=e=>{if(e.key==='Enter')tryUnlock()};
+  const fg=gEl('lk_fg');if(fg)fg.onclick=e=>{e.preventDefault();lockUI('rec')};
+  try{pw.focus()}catch{}}
+async function tryUnlock(){
+  const st=get(),pw=gEl('lk_pw'),er=gEl('lk_e');if(!st||!pw)return;
+  if(Date.now()<until){lockUI();return}
+  const v=pw.value;if(!v){er.textContent='Scrivi la password.';return}
+  gEl('lk_go').disabled=true;let ok=false;try{ok=await check(v,st)}catch{}
+  if(ok){fails=0;unlock();return}
+  fails++;if(fails>=5){until=Date.now()+30000;fails=0;lockUI();const t=setInterval(()=>{if(Date.now()>=until){clearInterval(t);if(H.classList.contains('locked'))lockUI()}else{const e=gEl('lk_e');if(e&&gEl('lk_pw'))e.textContent='Troppi tentativi. Riprova tra '+Math.ceil((until-Date.now())/1000)+' secondi.'}},1000);return}
+  er.textContent='Password errata.';gEl('lk_go').disabled=false;pw.value='';pw.focus()}
+async function recover(){
+  const st=get(),er=gEl('lk_e');if(!st||!st.rh)return;
+  const rc=normRec(gEl('lk_rc').value),a=gEl('lk_n1').value,b=gEl('lk_n2').value;
+  if(!rc){er.textContent='Scrivi il codice di recupero.';return}
+  if(a.length<6){er.textContent='La nuova password deve avere almeno 6 caratteri.';return}
+  if(a!==b){er.textContent='Le due password non coincidono.';return}
+  let ok=false;try{ok=(await hp(rc,st.rs,st.ralg))===st.rh}catch{}
+  if(!ok){er.textContent='Codice di recupero non valido.';return}
+  const n=await makeState(a,st);if(!put(n)){er.textContent='Impossibile salvare: il browser blocca la memoria.';return}
+  unlock()}
+function lock(){
+  if(!get())return;setUn(false);try{if(window.CCAI_micStop)window.CCAI_micStop()}catch{}
+  H.classList.add('locked');lockUI();upd()}
+function unlock(){setUn(true);last=Date.now();H.classList.remove('locked');const b=gEl('lock');if(b)b.innerHTML='';upd();if(typeof sched==='function')sched()}
+
+/* ---- pulsante Blocca in alto ---- */
+function upd(){
+  const t=document.querySelector('.tools');if(!t)return;let b=gEl('lockb');
+  if(get()){if(!b){b=document.createElement('button');b.type='button';b.className='ib';b.id='lockb';b.textContent='Blocca';b.onclick=lock;t.insertBefore(b,gEl('theme')||null)}}
+  else if(b)b.remove()}
+
+/* ---- blocco automatico ---- */
+['pointerdown','keydown','touchstart','scroll','wheel'].forEach(n=>addEventListener(n,()=>{last=Date.now()},{passive:true,capture:true}));
+setInterval(()=>{const st=get();if(!st||!st.auto||H.classList.contains('locked'))return;if(Date.now()-last>st.auto*60000)lock()},15000);
+document.addEventListener('visibilitychange',()=>{const st=get();
+  if(document.hidden){hiddenAt=Date.now();return}
+  if(st&&st.auto&&hiddenAt&&Date.now()-hiddenAt>st.auto*60000&&!H.classList.contains('locked'))lock();hiddenAt=0});
+
+/* ---- impostazioni ---- */
+window.lockHtml=function(){
+  const st=get(),a=st?st.auto:15;
+  const opt=[[0,'Mai'],[5,'5 minuti'],[15,'15 minuti'],[30,'30 minuti'],[60,'1 ora']].map(([v,l])=>`<option value="${v}"${v===a?' selected':''}>${l}</option>`).join('');
+  return`<div class="sec"><h2>Protezione con password <small>${st?'attiva':'non attiva'}</small></h2>
+  <p class="note">La password blocca l'app su <b>questo dispositivo</b>: va impostata su ciascun dispositivo che usi. È un blocco di schermata, non cifra i dati: tieni comunque i backup al sicuro.</p>
+  <div class="bar"><div class="grp">${st?`<button class="btn pri" data-act="locknow">Blocca ora</button><button class="btn" data-act="lockchange">Cambia password</button><button class="btn" data-act="lockoff">Disattiva</button>`:`<button class="btn pri" data-act="lockset">Imposta password</button>`}</div>
+  ${st?`<label class="f" style="min-width:200px"><span>Blocco automatico dopo</span><select id="lk_auto">${opt}</select></label>`:''}</div></div>`};
+document.addEventListener('change',e=>{if(e.target&&e.target.id==='lk_auto'){const st=get();if(st){st.auto=Number(e.target.value)||0;put(st);toast(st.auto?'Blocco automatico dopo '+st.auto+' minuti di inattività':'Blocco automatico disattivato')}}});
+const pwForm=(title,cur,btnAct,btnLbl)=>modalShell(title,`<div style="display:grid;gap:10px;padding:2px 0">
+  ${cur?'<label class="f full"><span>Password attuale</span><input id="lk_cur" type="password" autocomplete="current-password"></label>':''}
+  ${btnAct==='lockoffgo'?'':`<label class="f full"><span>${cur?'Nuova password':'Password (almeno 6 caratteri)'}</span><input id="lk_n1" type="password" autocomplete="new-password"></label>
+  <label class="f full"><span>Ripeti la password</span><input id="lk_n2" type="password" autocomplete="new-password"></label>`}
+  <p class="err" id="lk_me" role="alert" hidden></p>
+  <div class="acts"><button type="button" class="btn" data-act="mclose">Annulla</button><button type="button" class="btn pri" id="lk_ok" data-act="${btnAct}">${btnLbl}</button></div></div>`);
+const merr=m=>{const e=gEl('lk_me');if(e){e.textContent=m;e.hidden=false}const b=gEl('lk_ok');if(b)b.disabled=false};
+const v2=()=>{const a=gEl('lk_n1').value,b=gEl('lk_n2').value;if(a.length<6){merr('La password deve avere almeno 6 caratteri.');return null}if(a!==b){merr('Le due password non coincidono.');return null}return a};
+function showRec(code){modalShell('Codice di recupero',`<div style="display:grid;gap:10px;padding:2px 0">
+  <p>Scrivi questo codice su un foglio e conservalo. Serve se dimentichi la password e <b>non verrà più mostrato</b>.</p>
+  <p style="font:600 26px/1.2 var(--f-head,sans-serif);letter-spacing:.08em;text-align:center;user-select:all">${E(code)}</p>
+  <div class="acts"><button type="button" class="btn pri" data-act="mclose">Ho annotato il codice</button></div></div>`)}
+Object.assign(ACTS,{
+  lockset:()=>pwForm('Imposta password',false,'locksetgo','Attiva blocco'),
+  lockchange:()=>pwForm('Cambia password',true,'lockchangego','Cambia password'),
+  lockoff:()=>pwForm('Disattiva password',true,'lockoffgo','Disattiva'),
+  locknow:()=>lock(),
+  locksetgo:async el=>{el.disabled=true;const p=v2();if(!p)return;
+    const st=await makeState(p,null),rc=newRec();st.rs=saltNew();st.ralg=algNow();st.rh=await hp(normRec(rc),st.rs,st.ralg);
+    if(!put(st)){merr('Impossibile salvare: il browser blocca la memoria del sito.');return}
+    setUn(true);upd();closeModal();showRec(rc);if(typeof sched==='function')sched()},
+  lockchangego:async el=>{el.disabled=true;const st=get();if(!st)return;let ok=false;try{ok=await check(gEl('lk_cur').value,st)}catch{}
+    if(!ok){merr('Password attuale errata.');return}const p=v2();if(!p)return;
+    if(!put(await makeState(p,st))){merr('Impossibile salvare.');return}closeModal();toast('Password cambiata')},
+  lockoffgo:async el=>{el.disabled=true;const st=get();if(!st)return;let ok=false;try{ok=await check(gEl('lk_cur').value,st)}catch{}
+    if(!ok){merr('Password errata.');return}put(null);setUn(false);upd();closeModal();toast('Password disattivata');if(typeof sched==='function')sched()}
+});
+/* ---- avvio ---- */
+if(get()&&!isUn()){H.classList.add('locked');lockUI()}
+upd();
+})();
 </script>
 <script>
 if('serviceWorker' in navigator&&location.protocol==='https:'){addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
