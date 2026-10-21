@@ -1,6 +1,6 @@
 /* Contabilità Cantieri v03.2 - cache per l'apertura veloce e senza rete.
    I dati dell'app NON passano da qui: restano nel browser (e nel backup). */
-const CACHE = 'cantieri-v03.4';
+const CACHE = 'cantieri-v03.5';
 const BASE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(BASE)).then(() => self.skipWaiting()));
